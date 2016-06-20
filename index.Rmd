@@ -1,0 +1,84 @@
+---
+title       : Hits and Run!!!
+subtitle    : Data Visualization for All-Time Hits in MLB
+author      : Mike Shih
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax]            # {mathjax, quiz, bootstrap}
+ext_widgets : {rCharts: libraries/nvd3}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+--- 
+## All-Time Hits in MLB
+- The purpose of the project is to visualize all-time hits record in Major League Baseball.
+
+- Lahman’s Baseball Database
+
+- From 1871 to 2015
+
+- Formats: csv, MS Access, SQL
+
+- Database includes players' information (Master.csv) and career batting record (Batting.csv)
+
+---
+
+## Data Preparation - 1
+
+- Covert middle names to abbreviation (names.R)
+
+- Data proccessing (data_processing.R) 
+
+1. merges Master.csv and Batting.csv
+        
+2. generates cumulative hits record, cumulative AB and seniority
+
+3. removes the multiple data in the same year due to the transfering (remove_dup.R).   
+
+---
+## Data Preparation - 2
+
+- User will input the maximum and minimun counts of hits on the sidebar panel. 
+
+- The input values will pass to server.R and use funtion "careerhit" (in careerhit.R) to select players satisfied the criteria. 
+
+---
+## Ploting by rCharts NVD3
+
+```{r, message=F, warning=F}
+library(rCharts)
+library(dplyr)
+```
+
+Players with hits over 3500.
+
+```{r nvd3plot2, results = 'asis', comment = NA, message = F, echo = F}
+library(rCharts)
+library(dplyr)
+source("careerhit.R")
+Batting.data <- read.csv("./demo/Batting_Master.csv")
+career_hit <- careerhit(Batting.data, 3500) 
+Batting.all.total <- Batting.data[Batting.data$playerID %in% career_hit$playerID, ]
+
+P1 <- nPlot(H_cum ~ yearID,
+                data = Batting.all.total,
+                group = "nameFull",
+                type = "lineChart", 
+                width = 650)
+
+        P1$chart(showLegend = FALSE)
+        P1$xAxis(axisLabel = "Year")
+        P1$yAxis(axisLabel = "Cumulative Hits", width = 62)
+        P1$chart(tooltipContent = "#! function(key, x, y, e){
+                return '<P><h5><b>Name</b>: ' + e.point.nameFull + '<br>' +
+                '<b>Year</b>: ' + e.point.yearID + '<br>' +
+                '<b>Age</b>: ' + e.point.age + '<br>' +
+                '<b>Seniority</b>: ' + e.point.seniority + '<br>' +
+                '<b>Hits</b>: ' + e.point.H_cum + '<br>' +
+                '<b>Batting Average</b>: ' + e.point.battingaverage + '<br>' +
+                '</h5></P>'} !#")
+P1
+
+```
+

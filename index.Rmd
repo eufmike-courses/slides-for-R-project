@@ -56,9 +56,12 @@ Players with hits over 3500.
 ```{r nvd3plot2, results = 'asis', comment = NA, message = F, echo = F}
 library(rCharts)
 library(dplyr)
+library(knitr)
+opts_chunk$set(comment = NA, results = 'asis', comment = NA, tidy = F)
 source("careerhit.R")
 Batting.data <- read.csv("./demo/Batting_Master.csv")
 career_hit <- careerhit(Batting.data, 3500) 
+
 Batting.all.total <- Batting.data[Batting.data$playerID %in% career_hit$playerID, ]
 
 P1 <- nPlot(H_cum ~ yearID,
@@ -78,7 +81,7 @@ P1 <- nPlot(H_cum ~ yearID,
                 '<b>Hits</b>: ' + e.point.H_cum + '<br>' +
                 '<b>Batting Average</b>: ' + e.point.battingaverage + '<br>' +
                 '</h5></P>'} !#")
-P1
+P1$show('inline', include_assets = TRUE, cdn = TRUE)
 
 ```
 
